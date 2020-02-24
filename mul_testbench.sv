@@ -4,6 +4,8 @@
 module mul_testbench();
   int i, j;
   wire is_signed;
+  reg enable;
+  wire completed;
   logic clk;
 
   // NOTE: signed mul
@@ -25,36 +27,42 @@ module mul_testbench();
   assign sink = sink_logic;
   assign ans = ans_logic;
 
-  mul u0(clk,is_signed,src,sink,dest);
+  mul u0(clk,enable,completed,is_signed,src,sink,dest);
+
+  always begin
+    clk <= 1'b0; #1;
+    src_logic = src_logic + 32'h1;
+    sink_logic = sink_logic - 32'h1; 
+    clk <= 1'b1; #1;
+  end
 
   initial begin
-    clk <= 1'b0;
-    for (i=0; i<1; i++) begin
-      src_logic = 32'h1;
-      sink_logic = 32'hffff;
+    src_logic = 32'h0;
+    sink_logic = 32'hffffffff;
+    enable = 0;
 
-      #1;
-      clk <= !clk; #1;
-      clk <= !clk; #1;
-      clk <= !clk; #1;
-      clk <= !clk; #1;
-      clk <= !clk; #1;
-      clk <= !clk; #1;
-      clk <= !clk; #1;
-      clk <= !clk; #1;
-      #1;
+    #21;
 
+    for (i=0; i<5; i++) begin
       ans_logic = src * sink;
+      enable = 1;
 
-      #1;
+      #2;
 
+      enable = 0;
+
+      wait(completed);
       if (dest != ans) begin
-      $display(" src = %b %b", src[31:16], src[15:0]);
-      $display("sink = %b %b", sink[31:16], sink[15:0]);
-      $display("dest = %b %b %b %b", dest[63:48], dest[47:32], dest[31:16], dest[15:0]);
-      $display(" ans = %b %b %b %b", ans[63:48], ans[47:32], ans[31:16], ans[15:0]);
-      $display();
+        $display(" src = %b %b", src[31:16], src[15:0]);
+        $display("sink = %b %b", sink[31:16], sink[15:0]);
+        $display("dest = %b %b %b %b", dest[63:48], dest[47:32], dest[31:16], dest[15:0]);
+        $display(" ans = %b %b %b %b", ans[63:48], ans[47:32], ans[31:16], ans[15:0]);
+        $display();
       end
+
+      #2;
     end
+    $finish;
   end
+
 endmodule

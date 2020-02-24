@@ -41,6 +41,8 @@ endmodule
 
 module div(
   input wire clk,
+  input wire enable,
+  output wire completed,
   input wire is_signed,
   input wire [31:0] s,
   input wire [31:0] t,
@@ -60,6 +62,10 @@ reg ssign1_reg, ssign2_reg, ssign3_reg, ssign4_reg, ssign5_reg, ssign6_reg, ssig
 reg tsign1_reg, tsign2_reg, tsign3_reg, tsign4_reg, tsign5_reg, tsign6_reg, tsign7_reg, tsign8_reg;
 
 wire [31:0] s_in, t_in;
+
+reg [6:0] done;
+
+assign completed = done[0];
 
 assign s1_prev = {32'b0, s_in};
 assign t1_prev = {1'b0, t_in, 31'b0};
@@ -145,6 +151,7 @@ assign tsign7_prev = tsign67;
 assign tsign8_prev = tsign78;
 
 always @(posedge clk) begin
+  done <= {enable, done[6:1]};
   s12 <= s1_next;
   s23 <= s2_next;
   s34 <= s3_next;
