@@ -89,6 +89,8 @@ endmodule
 
 module mul(
   input wire clk,
+  input wire enable,
+  output wire completed,
   input wire is_signed,
   input wire [31:0] s,
   input wire [31:0] t,
@@ -103,6 +105,9 @@ reg [15:0][63:0] array1_reg;
 reg [7:0][63:0] array2_reg;
 reg [3:0][63:0] array3_reg;
 reg [1:0][63:0] array4_reg;
+reg [3:0] done;
+
+assign completed = done[0];
 
 assign array1_in = array1_reg;
 assign array2_in = array2_reg;
@@ -124,6 +129,7 @@ mul_stage4 u4(sign3_in,array3_in,sign4_out,array4_out);
 mul_stage5 u5(sign4_in,array4_in,d);
 
 always @(posedge clk) begin
+  done <= {enable, done[3:1]};
   array1_reg <= array1_out;
   array2_reg <= array2_out;
   array3_reg <= array3_out;
